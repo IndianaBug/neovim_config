@@ -1,53 +1,63 @@
 -- ~/.config/nvim/lua/config/lazy.lua
 
+-- Setup path for lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-  local out = vim.fn.system({
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
     "git",
     "clone",
     "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
     "--branch=stable",
-    lazyrepo,
     lazypath,
   })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_echo({
-      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
-      { "\nPress any key to exit..." },
-    }, true, {})
-    vim.fn.getchar()
-    os.exit(1)
-  end
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- Load Lazy.nvim plugin manager
 require("lazy").setup({
   spec = {
-    -- Add LazyVim and import its plugins
+    -- Load plugins from LazyVim and your custom configurations
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    -- Import your custom plugins
     { import = "plugins" },
+
+    -- Codeium plugin for AI-powered autocompletion
+    {
+      "Exafunction/codeium.vim",
+      config = function()
+        vim.g.codeium_disable_bindings = 1 -- Optional: disable default mappings
+      end,
+    },
+
+    -- LSP configuration
+    {
+      "neovim/nvim-lspconfig", -- LSP configuration
+      config = function()
+        require("lspconfig").rust_analyzer.setup({})
+      end,
+    },
   },
   defaults = {
-    lazy = false,
-    version = false, -- always use the latest git commit
+    lazy = false, -- Load plugins immediately by default
+    version = false, -- Always use the latest git commit
   },
-  install = { colorscheme = { "tokyonight", "habamax" } },
+  install = {
+    colorscheme = { "tokyonight", "habamax" }, -- Set default colorschemes
+  },
   checker = {
-    enabled = true, -- check for plugin updates periodically
-    notify = false, -- notify on update
-  }, -- automatically check for plugin updates
+    enabled = true, -- Periodically check for plugin updates
+    notify = false, -- Disable notifications for updates
+  },
   performance = {
     rtp = {
-      -- Disable some built-in plugins
+      -- Disable some built-in plugins to improve performance
       disabled_plugins = {
-        "gzip",
-        "tarPlugin",
-        "tohtml",
-        "tutor",
-        "zipPlugin",
+        "gzip", -- Handles compressed files
+        "tarPlugin", -- Handles tar archives
+        "tohtml", -- Converts buffers to HTML
+        "tutor", -- Vim tutor
+        "zipPlugin", -- Handles zip archives
+        "netrwPlugin", -- Disable netrw if using a file explorer plugin
       },
     },
   },
