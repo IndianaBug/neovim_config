@@ -1,63 +1,52 @@
--- ~/.config/nvim/lua/config/lazy.lua
-
--- Setup path for lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable",
-    lazypath,
-  })
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
+  end
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Load Lazy.nvim plugin manager
 require("lazy").setup({
   spec = {
-    -- Load plugins from LazyVim and your custom configurations
+    -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    -- import/override with your plugins
     { import = "plugins" },
-
-    -- Codeium plugin for AI-powered autocompletion
-    {
-      "Exafunction/codeium.vim",
-      config = function()
-        vim.g.codeium_disable_bindings = 1 -- Optional: disable default mappings
-      end,
-    },
-
-    -- LSP configuration
-    {
-      "neovim/nvim-lspconfig", -- LSP configuration
-      config = function()
-        require("lspconfig").rust_analyzer.setup({})
-      end,
-    },
   },
   defaults = {
-    lazy = false, -- Load plugins immediately by default
-    version = false, -- Always use the latest git commit
+    -- By default, only LazyVim plugins will be lazy-loaded. Your custom plugins will load during startup.
+    -- If you know what you're doing, you can set this to `true` to have all your custom plugins lazy-loaded by default.
+    lazy = false,
+    -- It's recommended to leave version=false for now, since a lot the plugin that support versioning,
+    -- have outdated releases, which may break your Neovim install.
+    version = false, -- always use the latest git commit
+    -- version = "*", -- try installing the latest stable version for plugins that support semver
   },
-  install = {
-    colorscheme = { "tokyonight", "habamax" }, -- Set default colorschemes
-  },
+  install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = true, -- Periodically check for plugin updates
-    notify = false, -- Disable notifications for updates
-  },
+    enabled = true, -- check for plugin updates periodically
+    notify = false, -- notify on update
+  }, -- automatically check for plugin updates
   performance = {
     rtp = {
-      -- Disable some built-in plugins to improve performance
+      -- disable some rtp plugins
       disabled_plugins = {
-        "gzip", -- Handles compressed files
-        "tarPlugin", -- Handles tar archives
-        "tohtml", -- Converts buffers to HTML
-        "tutor", -- Vim tutor
-        "zipPlugin", -- Handles zip archives
-        "netrwPlugin", -- Disable netrw if using a file explorer plugin
+        "gzip",
+        -- "matchit",
+        -- "matchparen",
+        -- "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
       },
     },
   },
