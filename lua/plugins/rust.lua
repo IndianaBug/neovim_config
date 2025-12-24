@@ -17,33 +17,31 @@ return {
     end,
   },
 
-  -- -- 2) LSP Config + Mason
-  -- {
-  --   config = function()
-  --     -- Mason initialization
-  --     require("mason").setup()
-  --     require("mason-lspconfig").setup()
-  --
-  --     local lspconfig = require("lspconfig")
-  --
-  --     -- Setup rust_analyzer (for Rust)
-  --     -- lspconfig.rust_analyzer.setup({
-  --     --   settings = {
-  --     --     ["rust-analyzer"] = {
-  --     --       check = {
-  --     --         command = "clippy",
-  --     --       },
-  --     --       diagnostics = {
-  --     --         enable = true,
-  --     --       },
-  --     --       cargo = {
-  --     --         allFeatures = true,
-  --     --       },
-  --     --     },
-  --     --   },
-  --     -- })
-  --   end,
-  -- },
+  {
+    "simrat39/rust-tools.nvim",
+    config = function()
+      local rt = require("rust-tools")
+
+      rt.setup({
+        server = {
+          -- ⬇ force using rustup's rust-analyzer
+          cmd = { "rustup", "run", "stable", "rust-analyzer" },
+
+          on_attach = function(_, bufnr)
+            vim.keymap.set("n", "<Leader>ca", rt.code_action_group.code_action_group, { buffer = bufnr })
+            vim.keymap.set("n", "<Leader>ch", rt.hover_actions.hover_actions, { buffer = bufnr })
+          end,
+          settings = {
+            ["rust-analyzer"] = {
+              inlayHints = { enable = false },
+              -- if you want to temporarily kill the error completely:
+              -- procMacro = { enable = false },
+            },
+          },
+        },
+      })
+    end,
+  },
 
   -- 3) Rust Tools: inlay hints, code actions, hover actions, etc.
   {
