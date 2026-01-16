@@ -1,60 +1,35 @@
 return {
-
-  -- 1) Treesitter
+  ---------------------------------------------------------------------------
+  -- Treesitter (LazyVim-friendly: extend opts, do NOT call configs.setup here)
+  ---------------------------------------------------------------------------
   {
     "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = { "python", "lua", "rust", "toml", "json" },
-        highlight = {
-          enable = true,
-        },
-        indent = {
-          enable = true,
-        },
-      })
+    opts = function(_, opts)
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, { "python", "lua", "rust", "toml", "json" })
+      opts.highlight = opts.highlight or {}
+      opts.highlight.enable = true
+      opts.indent = opts.indent or {}
+      opts.indent.enable = true
+      opts.auto_install = true
     end,
   },
 
+  ---------------------------------------------------------------------------
+  -- Rust (modern replacement for rust-tools.nvim)
+  ---------------------------------------------------------------------------
   {
-    "simrat39/rust-tools.nvim",
+    "mrcjkb/rustaceanvim",
+    ft = { "rust" },
     config = function()
-      local rt = require("rust-tools")
-
-      rt.setup({
+      vim.g.rustaceanvim = {
         server = {
-          -- ⬇ force using rustup's rust-analyzer
+          -- force using rustup's rust-analyzer
           cmd = { "rustup", "run", "stable", "rust-analyzer" },
-
           on_attach = function(_, bufnr)
-            vim.keymap.set("n", "<Leader>ca", rt.code_action_group.code_action_group, { buffer = bufnr })
-            vim.keymap.set("n", "<Leader>ch", rt.hover_actions.hover_actions, { buffer = bufnr })
-          end,
-          settings = {
-            ["rust-analyzer"] = {
-              inlayHints = { enable = false },
-              -- if you want to temporarily kill the error completely:
-              -- procMacro = { enable = false },
-            },
-          },
-        },
-      })
-    end,
-  },
-
-  -- 3) Rust Tools: inlay hints, code actions, hover actions, etc.
-  {
-    "simrat39/rust-tools.nvim",
-    config = function()
-      local rt = require("rust-tools")
-
-      rt.setup({
-        server = {
-          on_attach = function(_, bufnr)
-            -- Example keymaps for Rust Tools
-            vim.keymap.set("n", "<Leader>ca", rt.code_action_group.code_action_group, { buffer = bufnr })
-            vim.keymap.set("n", "<Leader>ch", rt.hover_actions.hover_actions, { buffer = bufnr })
+            -- Equivalent-ish mappings to your rust-tools ones
+            vim.keymap.set("n", "<Leader>ca", vim.lsp.buf.code_action, { buffer = bufnr })
+            vim.keymap.set("n", "<Leader>ch", vim.lsp.buf.hover, { buffer = bufnr })
           end,
           settings = {
             ["rust-analyzer"] = {
@@ -62,37 +37,34 @@ return {
             },
           },
         },
-      })
+      }
     end,
   },
 
-  -- 4) crates.nvim: Manage Cargo.toml dependencies
+  ---------------------------------------------------------------------------
+  -- crates.nvim (Cargo.toml helper)
+  ---------------------------------------------------------------------------
   {
     "saecki/crates.nvim",
-    version = "v0.3.0",
+    event = { "BufRead Cargo.toml" },
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       require("crates").setup({
-        null_ls = {
-          enabled = true,
-          name = "crates.nvim",
-        },
+        -- removed null_ls integration (LazyVim uses conform/nvim-lint by default)
       })
     end,
   },
 
-  ----------------------------------------------------------------------------
-  --                            ADDITIONAL PLUGINS                           --
-  ----------------------------------------------------------------------------
-
-  -- A) nvim-cmp: Auto-completion (with snippet support)
+  ---------------------------------------------------------------------------
+  -- Completion
+  -- NOTE: LazyVim already includes nvim-cmp by default.
+  -- Keeping this can cause duplicate/override behavior. If you see weird cmp
+  -- behavior, delete this entire spec and configure via LazyVim opts instead.
+  ---------------------------------------------------------------------------
   {
     "hrsh7th/nvim-cmp",
     dependencies = {
-      -- Snippet engine
       "L3MON4D3/LuaSnip",
-
-      -- Sources for nvim-cmp
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
@@ -121,49 +93,45 @@ return {
         },
       })
 
-      -- (Optional) load some default vs-code like snippets
       require("luasnip.loaders.from_vscode").lazy_load()
     end,
   },
 
-  -- B) Fidget: LSP progress/status in a small window
+  ---------------------------------------------------------------------------
+  -- UI / Utilities
+  ---------------------------------------------------------------------------
   {
     "j-hui/fidget.nvim",
-    tag = "legacy", -- For versions before the major rewrite
+    tag = "legacy",
     config = function()
       require("fidget").setup({})
     end,
   },
 
-  -- C) Trouble: Better Diagnostics/Quickfix list
   {
     "folke/trouble.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("trouble").setup({})
-      -- Keymap example: open trouble
       vim.keymap.set("n", "<leader>xx", "<cmd>TroubleToggle<cr>", { silent = true, noremap = true })
     end,
   },
 
-  -- D) Telescope: Fuzzy finder for files, LSP symbols, etc.
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
-      local telescope = require("telescope")
-      telescope.setup({
+      require("telescope").setup({
         defaults = {
           mappings = {
             i = {
-              ["<C-u>"] = false, -- remove default mapping if you like
+              ["<C-u>"] = false,
               ["<C-d>"] = false,
             },
           },
         },
       })
 
-      -- Example keymaps
       local builtin = require("telescope.builtin")
       vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
       vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
@@ -172,11 +140,9 @@ return {
     end,
   },
 
-  -- E) Gitsigns: Inline Git diff markers & hunk actions
   {
     "lewis6991/gitsigns.nvim",
     config = function()
-      -- Set up gitsigns without `hl`
       require("gitsigns").setup({
         signs = {
           add = { text = "+" },
@@ -187,14 +153,12 @@ return {
         },
       })
 
-      -- Define highlights separately
       vim.api.nvim_set_hl(0, "GitSignsAdd", { link = "DiffAdd" })
       vim.api.nvim_set_hl(0, "GitSignsChange", { link = "DiffChange" })
       vim.api.nvim_set_hl(0, "GitSignsDelete", { link = "DiffDelete" })
     end,
   },
 
-  -- F) Lualine: Nice statusline
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -217,3 +181,4 @@ return {
     end,
   },
 }
+

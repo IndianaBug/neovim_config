@@ -1,48 +1,50 @@
 return {
   {
-    "williamboman/mason.nvim",
-    build = ":MasonUpdate", -- Recommended to keep Mason up to date
+    "mason-org/mason.nvim",
+    build = ":MasonUpdate",
     config = function()
       require("mason").setup()
     end,
   },
   {
-    "williamboman/mason-lspconfig.nvim",
+    "mason-org/mason-lspconfig.nvim",
     dependencies = {
       "neovim/nvim-lspconfig",
+      "mason-org/mason.nvim",
     },
     config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "pylsp" }, -- Use pylsp instead of pyright
+      local mason_lspconfig = require("mason-lspconfig")
+      mason_lspconfig.setup({
+        ensure_installed = { "pylsp" },
+        automatic_installation = true,
       })
 
       local lspconfig = require("lspconfig")
+
       local on_attach = function(client, bufnr)
-        -- Keymaps or other LSP-related config can go here
+        -- put your LSP keymaps here if you want
       end
-      -- Setup each server you want
-      require("mason-lspconfig").setup_handlers({
-        ["pylsp"] = function()
-          lspconfig.pylsp.setup({
-            on_attach = on_attach,
-            settings = {
-              pylsp = {
-                plugins = {
-                  pyflakes = { enabled = true }, -- Linter
-                  pylint = { enabled = true }, --to true if you prefer pylint
-                  mccabe = { enabled = true }, --reshold = 10 }, -- Complexity checker
-                  yapf = { enabled = false }, --sable yapf formatter
-                  autopep8 = { enabled = false }, -- Disable autopep8 formatter
-                  black = { enabled = false }, -- Enable Black formatter
-                  isort = { enabled = false }, -- Enable isort
-                  mypy = { enabled = true }, -- Enable mypy type checking
-                  ruff = { enabled = true }, -- Enable Ruff linter
-                },
-              },
+
+      -- ✅ Robust: configure pylsp directly (no setup_handlers needed)
+      lspconfig.pylsp.setup({
+        on_attach = on_attach,
+        settings = {
+          pylsp = {
+            plugins = {
+              pyflakes = { enabled = true },
+              pylint = { enabled = false }, -- set true if you really want pylint
+              mccabe = { enabled = true },  -- you can add threshold if you want
+              yapf = { enabled = false },
+              autopep8 = { enabled = false },
+              black = { enabled = false },
+              isort = { enabled = false },
+              mypy = { enabled = true },
+              ruff = { enabled = true },
             },
-          })
-        end,
+          },
+        },
       })
     end,
   },
 }
+
