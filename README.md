@@ -52,4 +52,31 @@ Clone the repository into your local Neovim configuration directory:
 git clone [https://github.com/IndianaBug/neovim_config](https://github.com/IndianaBug/neovim_config) ~/.config/nvim
 ```
 
+## 🪟 Windows (WSL / Ubuntu) – fzf-lua Setup Notes
+
+When using this Neovim config on Windows via WSL (Ubuntu), there are a few important details to ensure fzf-lua works correctly.
+
+❗ Why this is needed
+
+Ubuntu/Debian ship an outdated fzf (0.44.x) which is incompatible with modern fzf-lua.
+Symptoms include:
+
+unknown action: transform(...)
+
+fzf-lua pickers crashing or not opening
+
+errors when pressing <Space> f s, <Space> f f, etc.
+
+```
+mkdir -p ~/.local/bin
+cd ~/.local/bin
+
+FZF_VERSION="$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest | grep -Po '"tag_name": "v\K[0-9.]+' )"
+curl -L -o fzf.tar.gz "https://github.com/junegunn/fzf/releases/latest/download/fzf-${FZF_VERSION}-linux_amd64.tar.gz"
+
+tar -xzf fzf.tar.gz
+chmod +x fzf
+rm fzf.tar.gz
+~/.local/bin/fzf --version
+```
 ```
