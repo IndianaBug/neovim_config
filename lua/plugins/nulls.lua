@@ -8,7 +8,7 @@ return {
         sources = {
           null_ls.builtins.formatting.black,
           null_ls.builtins.formatting.isort,
-          null_ls.builtins.diagnostics.ruff, -- use ruff instead of flake8
+          -- no ruff diagnostics here
         },
       })
     end,
