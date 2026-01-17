@@ -83,11 +83,6 @@ rm fzf.tar.gz
 
 ## 📄 License
 
-This project is licensed under the **Apache License, Version 2.0**.
+This repository contains personal Neovim configuration files.
+Neovim and all plugins remain the property of their respective authors.
 
-You may use, modify, and distribute this configuration in accordance with
-the terms of the Apache 2.0 license.
-
-This repository makes use of third-party open-source software (including
-Lazy.nvim, LazyVim, and various Neovim plugins), each of which is licensed
-under its respective license. See individual project repositories for details.
